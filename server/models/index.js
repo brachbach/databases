@@ -19,7 +19,7 @@ module.exports = {
       var date = new Date();
       var timeString = '"' + date.getTime() + '"';
       databaseQuery(`INSERT INTO Messages (message, roomName, creationTime, id_Users) 
-        VALUES ('${req.body.text}', '${req.body.roomname}', ${timeString}, (SELECT id from users WHERE Username='${req.body.username}'))`)
+        VALUES ('${escape(req.body.text)}', '${escape(req.body.roomname)}', ${timeString}, (SELECT id from users WHERE Username='${req.body.username}'))`)
       return res; //kinda janky b/c at this point the server doesn't know whether the database operation was successful
     } // a function which can be used to insert a message into the database
   },
@@ -36,7 +36,7 @@ module.exports = {
       });
     }, 
     post: function (req, res) {
-      databaseQuery(`INSERT INTO Users (username) VALUES ('${req.body.username}')`)
+      databaseQuery(`INSERT INTO Users (username) VALUES ('${escape(req.body.username)}')`)
       return res;
     }
   }
@@ -58,6 +58,16 @@ function databaseQuery (queryString) {
   // return data;
 }
 
+function escape (string) {
+  var stringArr = string.split('');
+  return stringArr.reduce((string, char) => {
+    if(["'", '"'].indexOf(char) > -1) {
+      char = '\\' + char;
+    }
+    // console.log(char);
+    return string + char;
+  },'');
+}
 // INSERT INTO TAB_STUDENT(name_student, id_teacher_fk)
 // SELECT 'Joe The Student', id_teacher
 //   FROM TAB_TEACHER
